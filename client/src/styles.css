@@ -1,0 +1,8 @@
+.ui-container {
+  position: absolute;
+  width: 20rem;
+  height: 100%;
+  background-color: #ccc;
+  display: inline;
+  padding: 4px;
+}

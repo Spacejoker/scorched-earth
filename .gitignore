@@ -1,0 +1,6 @@
+*swp
+js/bin/*
+client/dist
+client/node_modules
+blender/
+resources/
