@@ -1,57 +1,52 @@
-import "./styles.css"
+import './styles.css';
+import * as fight from './scene/fight';
+import {GameState, Scene} from './types';
 
-const w = 600;
-const h = 480;
+let lastT = 0;
+let gs : GameState;
 
-function drawLandscape() {
+function initGamestate() : GameState {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   if (canvas?.getContext) {
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      const gradient = ctx.createLinearGradient(w/2, 0, w/2, h);
-      // Add three color stops
-      gradient.addColorStop(0, "blue");
-      gradient.addColorStop(1, "red");
-
-      ctx.fillStyle = gradient;
-      ctx?.fillRect(0,0,w, h);
-
-      // draw foreground:
-      ctx.fillStyle = 'green';;
-      ctx.beginPath();
-      ctx.moveTo(0, 200);
-      for (let i=0 ; i < 10; i++) {
-        let y =  100 + Math.floor(Math.random() * 380);
-        ctx.lineTo(i*(w/10), y);
-      }
-      ctx.lineTo(w,200);
-      ctx.lineTo(w,h);
-      ctx.lineTo(0,h);
-      ctx.lineTo(0,200);
-      ctx.fill();
-
-      ctx.fillStyle = 'white';
-      ctx.font = "24px serif";
-      ctx.fillText("Text is easy...", 10, 50);
+      return {
+        mode: Scene.FIGHT,
+        ctx,
+      };
     }
   }
+  throw Error('Could not init 2d context');
+};
+
+function gameloop(t:number) {
+  let deltaT = t - lastT;
+  lastT = t;
+
+  // update logics
+  //console.log('t passed:', deltaT);
+
+  requestAnimationFrame(gameloop)
+  render(gs)
 }
 
-let dirty = true;
-
-function animate() {
-  if (dirty) {
-    drawLandscape();
-    dirty = false;
+function render(gs: GameState) {
+  switch(gs.mode) {
+    case Scene.MAIN_MENU:
+      //mainMenu.render();
+      break;
+    case Scene.FIGHT:
+      fight.render(gs);
+      break;
+    case Scene.SHOP:
+      //mainMenu.render();
+      break;
+    case Scene.SCORING:
+      //mainMenu.render();
+      break;
   }
-  requestAnimationFrame(animate)
-  render()
+  //console.log('render...');
 }
 
-function render() {
-  console.log('render...');
-}
-
-animate();
-
-//registerEventHandlers({clearScene, requestDataAndAddToScene, walls: []}, camera);
+gs = initGamestate();
+gameloop(0);
