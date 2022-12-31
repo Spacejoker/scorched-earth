@@ -13,6 +13,9 @@ function initGamestate() : GameState {
       return {
         mode: Scene.FIGHT,
         ctx,
+        width: 640,
+        height: 480,
+        players: [],
       };
     }
   }
@@ -24,19 +27,17 @@ function gameloop(t:number) {
   lastT = t;
 
   // update logics
-  //console.log('t passed:', deltaT);
-
   requestAnimationFrame(gameloop)
-  render(gs)
+  render(gs, deltaT)
 }
 
-function render(gs: GameState) {
+function render(gs: GameState, dt: number) {
   switch(gs.mode) {
     case Scene.MAIN_MENU:
       //mainMenu.render();
       break;
     case Scene.FIGHT:
-      fight.render(gs);
+      fight.render(gs, dt);
       break;
     case Scene.SHOP:
       //mainMenu.render();
@@ -45,7 +46,6 @@ function render(gs: GameState) {
       //mainMenu.render();
       break;
   }
-  //console.log('render...');
 }
 
 gs = initGamestate();

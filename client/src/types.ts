@@ -5,6 +5,14 @@ export interface Foo {
 export interface GameState {
   mode: Scene;
   ctx: CanvasRenderingContext2D;
+  width: number;
+  height: number;
+  players: Player[];
+}
+
+export interface Player {
+  x: number;
+  y: number;
 }
 
 export enum Scene {
@@ -16,6 +24,4 @@ export enum Scene {
 
 export interface NewGameParams {
   players: number;
-  width: number;
-  height: number;
 }
