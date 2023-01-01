@@ -7,6 +7,18 @@ let gs : GameState;
 
 function initGamestate() : GameState {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+
+  function getCursorPosition(canvas:any, event:any) {
+    const rect = canvas.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    console.log("x: " + x + " y: " + y)
+  }
+
+  canvas.addEventListener('mousedown', function(e) {
+    getCursorPosition(canvas, e)
+  })
+
   if (canvas?.getContext) {
     const ctx = canvas.getContext("2d");
     if (ctx) {
@@ -16,6 +28,8 @@ function initGamestate() : GameState {
         width: 640,
         height: 480,
         players: [],
+        inputs: [],
+        projectiles: [],
       };
     }
   }
@@ -25,7 +39,6 @@ function initGamestate() : GameState {
 function gameloop(t:number) {
   let deltaT = t - lastT;
   lastT = t;
-
   // update logics
   requestAnimationFrame(gameloop)
   render(gs, deltaT)
@@ -48,5 +61,13 @@ function render(gs: GameState, dt: number) {
   }
 }
 
+document.addEventListener("keydown", (event) => {
+  gs.inputs.push(event);
+});
+
+
 gs = initGamestate();
 gameloop(0);
+
+
+

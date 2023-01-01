@@ -1,5 +1,15 @@
+export type Pixel = [number, number, number, number];
+
 export interface Foo {
   bar: string;
+}
+
+export interface Projectile {
+  x: number;
+  y: number;
+  v: [number, number];
+  width: number;
+  height: number;
 }
 
 export interface GameState {
@@ -8,6 +18,10 @@ export interface GameState {
   width: number;
   height: number;
   players: Player[];
+  inputs: KeyboardEvent[];
+  projectiles: Projectile[];
+  imageData?: ImageData;
+  grid?: boolean[][];
 }
 
 export interface Player {
@@ -24,4 +38,10 @@ export enum Scene {
 
 export interface NewGameParams {
   players: number;
+}
+
+export interface Sprite {
+  width: number;
+  height: number;
+  data: Uint8ClampedArray;
 }
