@@ -15,3 +15,9 @@ export function getPixel(sprite: Sprite, y:number, x:number) : Pixel {
   const data = sprite.data;
   return [data[idx], data[idx+1], data[idx+2], data[idx+3]];
 }
+
+export function drawText(gs: GameState, text: string, y: number, x:number) {
+  const ctx = gs.ctx;
+  ctx.font = "10px monospace";
+  ctx.fillText(text, x, y);
+}

@@ -1,6 +1,6 @@
 import './styles.css';
-import * as fight from './scene/fight';
 import {GameState, Scene} from './types';
+import * as fight from './scene/fight';
 
 let lastT = 0;
 let gs : GameState;
@@ -30,6 +30,7 @@ function initGamestate() : GameState {
         players: [],
         inputs: [],
         projectiles: [],
+        currentPlayer: 0,
       };
     }
   }

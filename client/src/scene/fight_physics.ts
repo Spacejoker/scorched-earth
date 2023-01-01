@@ -1,4 +1,4 @@
-import {Projectile, Pixel, Sprite, NewGameParams, GameState} from '../types';
+import {Player, Projectile, Pixel, Sprite, NewGameParams, GameState} from '../types';
 
 export function updateState(gs: GameState, dt: number) {
   if (!gs.grid) return;
@@ -54,4 +54,15 @@ function explode(gs: GameState, y:number, x:number, r:number) {
       }
     }
   }
+}
+
+export function getShootVector(player: Player): [number, number] {
+  const {angle, power} = player;
+  const PI_2 = (Math.PI / 180);
+  const modAngle = 180 - angle;
+  const xv = Math.cos((modAngle) * PI_2) * power / 50;
+  const yv = Math.sin((modAngle) * PI_2) * power / 50;
+  const res : [number, number] = [-yv, xv];
+  console.log(angle, '-> ', res);
+  return res;
 }

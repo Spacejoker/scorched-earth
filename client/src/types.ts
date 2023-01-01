@@ -7,6 +7,7 @@ export interface Foo {
 export interface Projectile {
   x: number;
   y: number;
+  // [y, x]
   v: [number, number];
   width: number;
   height: number;
@@ -22,11 +23,15 @@ export interface GameState {
   projectiles: Projectile[];
   imageData?: ImageData;
   grid?: boolean[][];
+  currentPlayer: number;
 }
 
 export interface Player {
   x: number;
   y: number;
+  name: string;
+  angle: number;
+  power: number;
 }
 
 export enum Scene {

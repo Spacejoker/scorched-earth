@@ -1,12 +1,11 @@
 import {Pixel, Sprite, NewGameParams, GameState} from '../types';
-import {getPixel, drawPixel} from '../graphics';
+import {getPixel, drawPixel, drawText} from '../graphics';
 import {nextInt} from '../math';
-import {updateState} from './fight_physics';
-import {FightStage} from './fight_model';
+import {getShootVector, updateState} from './fight_physics';
+import {drawOverlay} from './fight_overlay';
 
 let  imgData:any;
 let tankImageData: Sprite;
-let lastTenFrames  = new Array(10).fill(16), frameIdx = 0;
 let pixelColor: Pixel;
 
 export function render(gs: GameState, dt: number) {
@@ -17,15 +16,6 @@ export function render(gs: GameState, dt: number) {
   }
 }
 
-export function drawFps(gs: GameState, dt: number) {
-  lastTenFrames[frameIdx] = dt;
-  frameIdx += 1;
-  frameIdx %= 10;
-  let sum = lastTenFrames.reduce((acc, v) => acc + v, 0);
-  const ctx = gs.ctx;
-  ctx.font = "24px serif";
-  ctx.fillText(`FPS: ${Math.round(10000/sum)}`, 24, 24);
-}
 
 // Update grid from current canvas img data
 function imgDataToGrid(imgData: any, width: number, height: number) : any {
@@ -62,7 +52,8 @@ export function generateScene({players}: NewGameParams, gs: GameState) {
 
   imgData = gs.ctx.getImageData(0,0,gs.width, gs.height);
   gs.grid = imgDataToGrid(imgData, gs.width, gs.height);
-  gs.players = [{x: 25, y: 0}, {x: 575, y: 0}];
+  gs.players = [{x: 25, y: 0, name: 'Alice', angle: 135, power: 250}, {x: 575, y: 0, name: 'Bob', angle: 45, power: 250}];
+  gs.currentPlayer = 0;
 }
 
 export function redrawFromGrid(gs: GameState) {
@@ -125,16 +116,31 @@ function renderState(gs: GameState, dt: number) {
   gs.ctx.putImageData(gs.imageData, 0, 0);
 
   // Higher level rendering (text only).
-  drawFps(gs, dt);
+  drawOverlay(gs, dt);
 }
 
 function drawAgents(gs: GameState) {
   if (tankImageData) {
-    for (const player of gs.players) {
+    for (let p= 0; p < gs.players.length; p++) {
+      const player = gs.players[p];
       for (let i =0 ; i < tankImageData.height; i++) {
         for (let j =0 ; j < tankImageData.width; j++) {
           const pixel = getPixel(tankImageData, i, j);
           drawPixel(i + player.y, j + player.x, gs, pixel);
+        }
+      }
+      if (p == gs.currentPlayer) {
+        // draw aiming thing
+        const distance = 25;
+        const x0 = player.x + 10;
+        const y0 = player.y + 10;
+        const PI_2 = (Math.PI / 180);
+        const modAngle = 180 - player.angle;
+        const xv = Math.cos((modAngle) * PI_2) * distance + x0;
+        const yv = y0 - Math.sin((modAngle) * PI_2) * distance;
+        const offsets = [[1,0],[2,0],[-1,0],[-2,0],[0,1], [0,2], [0,-1], [0,-2]];
+        for (const [a, b] of offsets) {
+          drawPixel(yv + a, xv + b, gs, [255, 255, 255, 255]);
         }
       }
     }
@@ -147,26 +153,60 @@ function drawAgents(gs: GameState) {
       }
     }
   }
-
 }
 
 function shoot(gs: GameState) {
-  const player = gs.players[0];
+  const player = gs.players[gs.currentPlayer];
+  gs.currentPlayer += 1;
+  gs.currentPlayer %= gs.players.length;
   gs.projectiles.push({
-    x: player.x,
-    y: player.y,
-    v: [-5, 5],
+    x: player.x + 20/2,
+    y: player.y + 20/2,
+    v: getShootVector(player),
     width: 2,
     height: 2,
   });
 }
 
+function modAngle(gs: GameState, deltaAngle: number) {
+const player = gs.players[gs.currentPlayer]
+  let a = player.angle;
+  a += deltaAngle
+  a = (a + 180) % 180;
+  player.angle = a;
+}
+
+function modPower(gs: GameState, deltaPower: number) {
+  const player = gs.players[gs.currentPlayer]
+  let a = player.power;
+  a += deltaPower
+  a = Math.max(0, Math.min(1000, a));
+  player.power = a;
+
+}
+
 function processInputs(gs: GameState) {
   while(gs.inputs.length) {
     const event = gs.inputs.pop()!;
+    if (gs.projectiles.length) {
+      continue;
+    }
+    const shiftDown = event.getModifierState("Shift");
     switch(event.code) {
       case "Space":
         shoot(gs);
+        break;
+      case "ArrowLeft": 
+        modAngle(gs, shiftDown ? -1 : -10);
+        break;
+      case "ArrowRight":
+        modAngle(gs, shiftDown ? 1 : 10);
+        break;
+      case "ArrowUp": 
+        modPower(gs, shiftDown ? 1 : 10);
+        break;
+      case "ArrowDown":
+        modPower(gs, shiftDown ? -1 : -10);
         break;
     }
   }
