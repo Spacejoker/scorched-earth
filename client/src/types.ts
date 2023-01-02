@@ -14,7 +14,7 @@ export interface Projectile {
 }
 
 export interface GameState {
-  mode: Scene;
+  scene: Scene;
   ctx: CanvasRenderingContext2D;
   width: number;
   height: number;
@@ -24,6 +24,7 @@ export interface GameState {
   imageData?: ImageData;
   grid?: boolean[][];
   currentPlayer: number;
+  init?: boolean;
 }
 
 export interface Player {
@@ -32,6 +33,8 @@ export interface Player {
   name: string;
   angle: number;
   power: number;
+  hp: number;
+  points: number;
 }
 
 export enum Scene {

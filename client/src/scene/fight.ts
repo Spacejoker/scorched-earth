@@ -1,7 +1,7 @@
 import {Pixel, Sprite, NewGameParams, GameState} from '../types';
 import {getPixel, drawPixel, drawText} from '../graphics';
 import {nextInt} from '../math';
-import {getShootVector, updateState} from './fight_physics';
+import {placePlayers, getShootVector, updateState} from './fight_physics';
 import {drawOverlay} from './fight_overlay';
 
 let  imgData:any;
@@ -9,7 +9,7 @@ let tankImageData: Sprite;
 let pixelColor: Pixel;
 
 export function render(gs: GameState, dt: number) {
-  if (!gs.grid) {
+  if (!gs.grid || gs.init) {
     init(gs);
   } else {
     renderState(gs, dt);
@@ -52,7 +52,12 @@ export function generateScene({players}: NewGameParams, gs: GameState) {
 
   imgData = gs.ctx.getImageData(0,0,gs.width, gs.height);
   gs.grid = imgDataToGrid(imgData, gs.width, gs.height);
-  gs.players = [{x: 25, y: 0, name: 'Alice', angle: 135, power: 250}, {x: 575, y: 0, name: 'Bob', angle: 45, power: 250}];
+  if (gs.players.length ==0 ) {
+    gs.players = [
+      {x: 25, y: 0, name: 'Alice', angle: 135, power: 250, hp: 100, points: 0,},
+      {x: 575, y: 0, name: 'Bob', angle: 45, power: 250, hp: 100, points: 0},
+    ];
+  }
   gs.currentPlayer = 0;
 }
 
@@ -65,22 +70,6 @@ export function redrawFromGrid(gs: GameState) {
       } else {
         drawPixel(i, j, gs, [0,0,0,0]);
       }
-    }
-  }
-}
-
-function placePlayers(gs: GameState) {
-  if (!gs.grid) return;
-
-  for (const p of gs.players) {
-    let free = true;
-    while(free) {
-      for (let x =0; x < 20; x++) {
-        if (gs.grid[p.y+20][p.x + x]) {
-          free = false;
-        }
-      }
-      p.y += 1;
     }
   }
 }
@@ -102,6 +91,7 @@ function init(gs: GameState) {
   generateScene({players:2}, gs);
   placePlayers(gs);
   redrawFromGrid(gs);
+  gs.init = false;
 }
 
 // Render for each frame.
@@ -123,6 +113,7 @@ function drawAgents(gs: GameState) {
   if (tankImageData) {
     for (let p= 0; p < gs.players.length; p++) {
       const player = gs.players[p];
+      if (player.hp <= 0) continue;
       for (let i =0 ; i < tankImageData.height; i++) {
         for (let j =0 ; j < tankImageData.width; j++) {
           const pixel = getPixel(tankImageData, i, j);
@@ -157,8 +148,6 @@ function drawAgents(gs: GameState) {
 
 function shoot(gs: GameState) {
   const player = gs.players[gs.currentPlayer];
-  gs.currentPlayer += 1;
-  gs.currentPlayer %= gs.players.length;
   gs.projectiles.push({
     x: player.x + 20/2,
     y: player.y + 20/2,
@@ -166,6 +155,12 @@ function shoot(gs: GameState) {
     width: 2,
     height: 2,
   });
+  gs.currentPlayer += 1;
+  gs.currentPlayer %= gs.players.length;
+  while(gs.players[gs.currentPlayer].hp <= 0) {
+    gs.currentPlayer += 1;
+    gs.currentPlayer %= gs.players.length;
+  }
 }
 
 function modAngle(gs: GameState, deltaAngle: number) {

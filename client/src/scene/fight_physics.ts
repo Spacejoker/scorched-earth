@@ -1,4 +1,4 @@
-import {Player, Projectile, Pixel, Sprite, NewGameParams, GameState} from '../types';
+import {Scene, Player, Projectile, Pixel, Sprite, NewGameParams, GameState} from '../types';
 
 export function updateState(gs: GameState, dt: number) {
   if (!gs.grid) return;
@@ -19,7 +19,12 @@ export function updateState(gs: GameState, dt: number) {
     }
   }
   gs.projectiles = gs.projectiles.filter((p, idx) => idxToDelete.indexOf(idx) != 0);
-  // For each projectile - check vs grid.
+  // Check if 1 or fewer players left -> show end screen!
+  if (gs.players.filter((p) => p.hp> 0).length <= 1) {
+    gs.init = true;
+    console.log('scoring time!');
+    gs.scene = Scene.SCORING;
+  }
 }
 
 function checkCollision(grid: boolean[][], p: Projectile) {
@@ -43,6 +48,7 @@ function checkPixel(y : number, x: number, grid: boolean[][]) {
 function explode(gs: GameState, y:number, x:number, r:number) {
   if (!gs.grid) return;
 
+  // Explode circle on update grid 
   for (let i= y - r ; i <= y + r; i++) {
     for (let j = x - r ; j <= x + r; j++) {
       const dy = i - y;
@@ -54,15 +60,53 @@ function explode(gs: GameState, y:number, x:number, r:number) {
       }
     }
   }
+
+  // check if player hit!
+  for (let p  = 0 ; p < gs.players.length; p++) {
+    const player = gs.players[p];
+    const dy = y - (player.y + 10);
+    const dx = x - (player.x + 10);
+    if (dy * dy + dx * dx <= r * r) {
+      let damage = 100;
+      if (dy * dy + dx * dx > r * r / 4) {
+        damage /= 2;
+      }
+      player.hp -= damage;
+    }
+  }
+
+  for (let i =0 ; i < gs.players.length; i++) {
+    if (gs.players[i].hp <= 0) console.log(`Player ${gs.players[i].name} died!`);
+  }
+
+  if (gs.players.length > 0) {
+    placePlayers(gs);
+  }
 }
 
 export function getShootVector(player: Player): [number, number] {
   const {angle, power} = player;
   const PI_2 = (Math.PI / 180);
   const modAngle = 180 - angle;
-  const xv = Math.cos((modAngle) * PI_2) * power / 50;
-  const yv = Math.sin((modAngle) * PI_2) * power / 50;
+  const xv = Math.cos((modAngle) * PI_2) * power / 25;
+  const yv = Math.sin((modAngle) * PI_2) * power / 25;
   const res : [number, number] = [-yv, xv];
-  console.log(angle, '-> ', res);
   return res;
 }
+
+export function placePlayers(gs: GameState) {
+  if (!gs.grid) return;
+
+  for (const p of gs.players) {
+    let free = true;
+    while(free) {
+      for (let x =0; x < 20; x++) {
+        if (gs.grid[p.y+20][p.x + x]) {
+          free = false;
+        }
+      }
+      p.y += 1;
+    }
+  }
+}
+

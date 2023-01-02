@@ -1,6 +1,7 @@
 import './styles.css';
 import {GameState, Scene} from './types';
 import * as fight from './scene/fight';
+import * as scoring from './scene/scoring';
 
 let lastT = 0;
 let gs : GameState;
@@ -12,7 +13,7 @@ function initGamestate() : GameState {
     const rect = canvas.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
-    console.log("x: " + x + " y: " + y)
+    gs.projectiles.push({x, y, v:[0,0], width:2, height: 2});
   }
 
   canvas.addEventListener('mousedown', function(e) {
@@ -23,7 +24,7 @@ function initGamestate() : GameState {
     const ctx = canvas.getContext("2d");
     if (ctx) {
       return {
-        mode: Scene.FIGHT,
+        scene: Scene.FIGHT,
         ctx,
         width: 640,
         height: 480,
@@ -46,7 +47,7 @@ function gameloop(t:number) {
 }
 
 function render(gs: GameState, dt: number) {
-  switch(gs.mode) {
+  switch(gs.scene) {
     case Scene.MAIN_MENU:
       //mainMenu.render();
       break;
@@ -57,7 +58,7 @@ function render(gs: GameState, dt: number) {
       //mainMenu.render();
       break;
     case Scene.SCORING:
-      //mainMenu.render();
+      scoring.render(gs);
       break;
   }
 }

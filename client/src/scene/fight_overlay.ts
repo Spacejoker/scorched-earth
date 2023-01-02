@@ -10,10 +10,10 @@ export function drawOverlay(gs: GameState, dt: number) {
 
   drawText(gs, `Angle: ${player.angle}`, 10, 20);
   drawText(gs, `Power: ${player.power}`, 10, 140);
-  drawText(gs, `Player: ${player.name}`, 10, 260);
+  drawText(gs, `Player: ${player.name} (${Math.ceil(player.hp)} HP)`, 10, 260);
+  drawText(gs, `Weapon: Baby missile`, 10, 430);
   drawText(gs, `FPS: ${fps}`, 10, 580);
 }
-
 
 export function getFps(dt: number) {
   lastTenFrames[frameIdx] = dt;
